@@ -17,6 +17,7 @@ RUN if [ -n "$NEXUS_NPM_URL" ]; then \
 COPY . .
 RUN npm run build
 
+# Re-declare ARG after FROM (required in multistage builds)
 ARG REGISTRY_PREFIX=
 FROM ${REGISTRY_PREFIX}nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
