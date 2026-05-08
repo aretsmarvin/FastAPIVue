@@ -8,13 +8,15 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME: localhost
+      KC_HEALTH_ENABLED: "true"
     ports:
       - "8080:8080"
+      - "9000:9000"
     volumes:
       - keycloak_data:/opt/keycloak/data
       - ./keycloak/realm:/opt/keycloak/data/import
     healthcheck:
-      test: ["CMD", "/opt/keycloak/bin/kc.sh", "show-config"]
+      test: ["CMD", "/opt/keycloak/bin/kc.sh", "health"]
       interval: 15s
       timeout: 10s
       retries: 10
