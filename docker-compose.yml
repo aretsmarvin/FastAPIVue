@@ -29,13 +29,14 @@ services:
     environment:
       KEYCLOAK_URL: http://host.docker.internal:8080
       KEYCLOAK_REALM: demo
-      KEYCLOAK_CLIENT_ID: fastapi
+      KEYCLOAK_CLIENT_ID: vue-frontend
       KEYCLOAK_ISSUER: http://localhost:8080/realms/demo
     ports:
       - "8000:8000"
     depends_on:
       keycloak:
         condition: service_healthy
+    restart: on-failure
 
   frontend:
     build:
@@ -47,6 +48,7 @@ services:
       - "5173:80"
     depends_on:
       - backend
+    restart: on-failure
 
 volumes:
   keycloak_data:
