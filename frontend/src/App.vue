@@ -1,30 +1,16 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import keycloak from './services/keycloak'
+import { useUserStore } from './stores/userStore'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-
+const userStore = useUserStore()
 const loading = ref(true)
 const authenticated = ref(false)
-const me = ref(null)
-const error = ref('')
 
 const login = () => keycloak.login({ redirectUri: window.location.origin })
-const logout = () => keycloak.logout({ redirectUri: window.location.origin })
-
-const fetchMe = async () => {
-  error.value = ''
-  try {
-    await keycloak.updateToken(30)
-    const response = await fetch(`${API_BASE}/me`, {
-      headers: { Authorization: `Bearer ${keycloak.token}` },
-    })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.detail || 'Failed to fetch /me')
-    me.value = data
-  } catch (e) {
-    error.value = e.message
-  }
+const logout = () => {
+  userStore.clear()
+  keycloak.logout({ redirectUri: window.location.origin })
 }
 
 onMounted(async () => {
@@ -35,9 +21,9 @@ onMounted(async () => {
       checkLoginIframe: false,
     })
     authenticated.value = isAuthenticated
-    if (isAuthenticated) await fetchMe()
+    if (isAuthenticated) await userStore.fetchUser()
   } catch (e) {
-    error.value = `Keycloak init failed: ${e.message || e}`
+    userStore.error = `Keycloak init failed: ${e.message || e}`
   } finally {
     loading.value = false
   }
@@ -66,24 +52,27 @@ onMounted(async () => {
               <button class="btn btn-secondary" @click="logout">Logout</button>
             </div>
 
-            <div v-if="me" class="profile">
+            <div v-if="userStore.user" class="profile">
               <h2>Your profile</h2>
               <dl class="profile-grid">
-                <dt>Sub</dt>
-                <dd>{{ me.sub }}</dd>
-                <dt>Username</dt>
-                <dd>{{ me.username }}</dd>
+                <dt>Cn</dt>
+                <dd>{{ userStore.user.cn }}</dd>
+                <dt>Employee</dt>
+                <dd>{{ userStore.user.employee_id }}</dd>
+                <dt>Weergave naam</dt>
+                <dd>{{ userStore.user.display_name }}</dd>
+                <dt>Voornaam</dt>
+                <dd>{{ userStore.user.given_name }}</dd>
+                <dt>Achternaam</dt>
+                <dd>{{ userStore.user.family_name }}</dd>
                 <dt>Email</dt>
-                <dd>{{ me.email }}</dd>
-                <dt>Roles</dt>
-                <dd>{{ (me.roles || []).join(', ') || 'None' }}</dd>
+                <dd>{{ userStore.user.email }}</dd>
               </dl>
             </div>
 
-            <p v-else-if="!error" class="status">Loading profile…</p>
+            <p v-if="userStore.loading" class="status">Loading profile…</p>
+            <div v-if="userStore.error" class="error-box">{{ userStore.error }}</div>
           </div>
-
-          <div v-if="error" class="error-box">{{ error }}</div>
         </template>
       </div>
     </div>

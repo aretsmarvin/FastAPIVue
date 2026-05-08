@@ -34,9 +34,14 @@ def get_settings():
 
 
 class User:
-    def __init__(self, sub, username=None, email=None, roles=None):
+    def __init__(self, sub, cn=None, employee_id=None, display_name=None,
+                 given_name=None, family_name=None, email=None, roles=None):
         self.sub = sub
-        self.username = username
+        self.cn = cn
+        self.employee_id = employee_id
+        self.display_name = display_name
+        self.given_name = given_name
+        self.family_name = family_name
         self.email = email
         self.roles = roles or []
 
@@ -57,12 +62,20 @@ def decode_token(token: str, settings: Settings) -> User:
     )
     if payload.get("azp") != settings.client_id:
         raise HTTPException(status_code=401, detail="Invalid authorized party")
-    subject = payload.get("sub") or payload.get("preferred_username") or payload.get("email")
-    if not subject:
+    sub = payload.get("sub") or payload.get("preferred_username") or payload.get("email")
+    if not sub:
         raise HTTPException(status_code=401, detail="Token has no usable subject claim")
     return User(
-        sub=subject,
-        username=payload.get("preferred_username"),
+        sub=sub,
+        # cn: common name — falls back to preferred_username
+        cn=payload.get("cn") or payload.get("preferred_username"),
+        # employee_id: custom LDAP attribute mapped in Keycloak
+        employee_id=payload.get("employeeNumber") or payload.get("employee_id"),
+        # display_name: full display name
+        display_name=payload.get("name") or payload.get("display_name"),
+        # given_name / family_name: standard OIDC claims
+        given_name=payload.get("given_name"),
+        family_name=payload.get("family_name"),
         email=payload.get("email"),
         roles=payload.get("realm_access", {}).get("roles", []),
     )
@@ -96,7 +109,11 @@ def health():
 def me(user: User = Depends(get_current_user)):
     return {
         "sub": user.sub,
-        "username": user.username,
+        "cn": user.cn,
+        "employee_id": user.employee_id,
+        "display_name": user.display_name,
+        "given_name": user.given_name,
+        "family_name": user.family_name,
         "email": user.email,
         "roles": user.roles,
     }
