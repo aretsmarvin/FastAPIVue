@@ -38,11 +38,16 @@ Then open [http://localhost:5173](http://localhost:5173)
 
 ## Registry configuration (air-gapped / corporate)
 
-Edit `.env` to route all package and image pulls through your internal registries:
+Edit `.env` to route all image and package pulls through your internal registries:
 
 ```env
-# Harbor: Docker image registry
-HARBOR_REGISTRY=harbor.corp.local
+# Prefix for Docker Hub images (python, node, nginx) — include trailing slash
+REGISTRY_PREFIX=docker-proxy.local/mirror.gcr.io/
+
+# Prefix for quay.io images (keycloak) — include trailing slash
+# If your proxy serves all registries under the same prefix, set this the same as REGISTRY_PREFIX
+# If left empty, falls back to REGISTRY_PREFIX
+KEYCLOAK_REGISTRY_PREFIX=docker-proxy.local/quay.io/
 
 # Nexus: PyPI proxy (pip)
 NEXUS_PYPI_URL=https://nexus.corp.local/repository/pypi-proxy/simple
@@ -55,29 +60,36 @@ NEXUS_NPM_URL=https://nexus.corp.local/repository/npm-proxy
 
 | Variable | Controls |
 |---|---|
-| `HARBOR_REGISTRY` | Base image prefix for all `FROM` lines in Dockerfiles (`python`, `node`, `nginx`, `keycloak`) |
+| `REGISTRY_PREFIX` | Prefix for all `FROM` lines: `python:3.12-slim`, `node:22-alpine`, `nginx:alpine` |
+| `KEYCLOAK_REGISTRY_PREFIX` | Prefix for the Keycloak image (`quay.io/keycloak/keycloak`). Falls back to `REGISTRY_PREFIX` if empty |
 | `NEXUS_PYPI_URL` | `pip install --index-url` during backend build |
 | `NEXUS_NPM_URL` | `npm install --registry` during frontend build |
 
+### Important: trailing slash
+
+Registry prefix variables **must include a trailing slash**:
+```env
+# Correct
+REGISTRY_PREFIX=docker-proxy.local/mirror.gcr.io/
+
+# Wrong — missing trailing slash
+REGISTRY_PREFIX=docker-proxy.local/mirror.gcr.io
+```
+
 ### Leave empty for local/public dev
 
-All three variables default to empty. When empty:
-- Docker pulls images from the public registry as normal.
-- pip pulls from PyPI.
-- npm pulls from the public npm registry.
+All variables default to empty, which means Docker pulls from public registries as normal.
 
-### Harbor image naming
+### Resulting image names (example)
 
-When `HARBOR_REGISTRY=harbor.corp.local`, Docker Compose will pull:
+With `REGISTRY_PREFIX=docker-proxy.local/mirror.gcr.io/` and `KEYCLOAK_REGISTRY_PREFIX=docker-proxy.local/quay.io/`:
 
 ```
-harbor.corp.local/python:3.12-slim
-harbor.corp.local/node:22-alpine
-harbor.corp.local/nginx:alpine
-harbor.corp.local/quay.io/keycloak/keycloak:25.0
+docker-proxy.local/mirror.gcr.io/python:3.12-slim
+docker-proxy.local/mirror.gcr.io/node:22-alpine
+docker-proxy.local/mirror.gcr.io/nginx:alpine
+docker-proxy.local/quay.io/quay.io/keycloak/keycloak:25.0
 ```
-
-Make sure these images are proxied or pushed to your Harbor instance before building.
 
 ## How it works
 

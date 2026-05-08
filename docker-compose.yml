@@ -1,6 +1,6 @@
 services:
   keycloak:
-    image: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}quay.io/keycloak/keycloak:25.0
+    image: ${KEYCLOAK_REGISTRY_PREFIX:-${REGISTRY_PREFIX:-}}quay.io/keycloak/keycloak:25.0
     command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: admin
@@ -24,7 +24,7 @@ services:
     build:
       context: ./backend
       args:
-        BASE_IMAGE: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}python:3.12-slim
+        REGISTRY_PREFIX: ${REGISTRY_PREFIX:-}
         NEXUS_PYPI_URL: ${NEXUS_PYPI_URL:-}
     environment:
       KEYCLOAK_URL: http://host.docker.internal:8080
@@ -41,8 +41,7 @@ services:
     build:
       context: ./frontend
       args:
-        BASE_IMAGE: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}node:22-alpine
-        NGINX_IMAGE: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}nginx:alpine
+        REGISTRY_PREFIX: ${REGISTRY_PREFIX:-}
         NEXUS_NPM_URL: ${NEXUS_NPM_URL:-}
     ports:
       - "5173:80"

@@ -1,7 +1,5 @@
-# BASE_IMAGE allows swapping to a Harbor-hosted mirror.
-# Default falls back to the public image for local dev.
-ARG BASE_IMAGE=python:3.12-slim
-FROM ${BASE_IMAGE}
+ARG REGISTRY_PREFIX=
+FROM ${REGISTRY_PREFIX}python:3.12-slim
 
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
