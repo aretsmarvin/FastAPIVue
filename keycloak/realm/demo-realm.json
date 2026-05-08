@@ -12,6 +12,10 @@
       "email": "devuser@example.local",
       "firstName": "Dev",
       "lastName": "User",
+      "attributes": {
+        "employeeNumber": ["EMP-001"],
+        "cn": ["devuser"]
+      },
       "credentials": [
         {
           "type": "password",
@@ -49,7 +53,37 @@
       "attributes": {
         "pkce.code.challenge.method": "S256"
       },
-      "defaultClientScopes": ["web-origins", "profile", "email", "roles"]
+      "defaultClientScopes": ["web-origins", "profile", "email", "roles"],
+      "protocolMappers": [
+        {
+          "name": "employeeNumber",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "employeeNumber",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "employeeNumber",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "cn",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "cn",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "cn",
+            "jsonType.label": "String"
+          }
+        }
+      ]
     }
   ],
   "roles": {

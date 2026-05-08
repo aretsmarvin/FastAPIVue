@@ -1,72 +1,81 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-2: #273549;
-  --border: #334155;
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --accent: #22c55e;
-  --accent-text: #052e16;
-  --error: #fca5a5;
-  --error-bg: #450a0a;
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 16px;
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --error-bg: #fef2f2;
+  --error-text: #dc2626;
+  --success: #22c55e;
+  --radius: 0.75rem;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
+  font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 }
 
 .page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
 }
 
 .card {
-  width: min(680px, 100%);
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
 .card-header {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
+  background: var(--primary);
+  padding: 1.25rem 1.5rem;
 }
 
 .card-header h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .card-body {
-  padding: 1.5rem 2rem;
+  padding: 1.5rem;
 }
 
 .status {
   color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem 0;
 }
 
 .unauthenticated {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1rem;
-  align-items: flex-start;
+  padding: 1rem 0;
+}
+
+.unauthenticated p {
+  color: var(--text-muted);
 }
 
 .authenticated {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .top-row {
@@ -76,73 +85,71 @@ body {
 }
 
 .badge {
-  background: #14532d;
-  color: #bbf7d0;
-  padding: 0.3rem 0.75rem;
-  border-radius: 99px;
-  font-size: 0.875rem;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 0.8rem;
   font-weight: 600;
-}
-
-.profile {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
 }
 
 .profile h2 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 1rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
 }
 
 .profile-grid {
   display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 0.75rem 1rem;
+  grid-template-columns: 140px 1fr;
+  gap: 0.5rem 1rem;
+  font-size: 0.9rem;
 }
 
-dt {
+.profile-grid dt {
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-weight: 500;
 }
 
-dd {
-  word-break: break-word;
-  font-size: 0.875rem;
-}
-
-.error-box {
-  background: var(--error-bg);
-  border: 1px solid #991b1b;
-  border-radius: 10px;
-  padding: 1rem;
-  color: var(--error);
-  font-size: 0.875rem;
+.profile-grid dd {
+  color: var(--text);
+  word-break: break-all;
 }
 
 .btn {
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.15s;
+  border: none;
+  transition: background 0.15s;
 }
-
-.btn:hover { opacity: 0.85; }
 
 .btn-primary {
-  background: var(--accent);
-  color: var(--accent-text);
+  background: var(--primary);
+  color: #fff;
 }
 
+.btn-primary:hover { background: var(--primary-dark); }
+
 .btn-secondary {
-  background: #334155;
+  background: var(--border);
   color: var(--text);
+}
+
+.btn-secondary:hover { background: #cbd5e1; }
+
+.error-box {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
 }
