@@ -1,0 +1,20 @@
+# Node
+node_modules/
+dist/
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Docker
+.docker/
+
+# Editor
+.vscode/
+.idea/
+*.swp
