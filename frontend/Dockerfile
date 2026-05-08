@@ -2,9 +2,11 @@ ARG REGISTRY_PREFIX=
 FROM ${REGISTRY_PREFIX}node:22-alpine AS builder
 
 WORKDIR /app
-COPY package.json package-lock.json* ./
 
 ARG NEXUS_NPM_URL
+ENV NEXUS_NPM_URL=${NEXUS_NPM_URL}
+
+COPY package.json package-lock.json* ./
 RUN if [ -n "${NEXUS_NPM_URL}" ]; then \
         npm install --registry "${NEXUS_NPM_URL}"; \
     else \
