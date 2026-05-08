@@ -16,7 +16,7 @@ services:
       - keycloak_data:/opt/keycloak/data
       - ./keycloak/realm:/opt/keycloak/data/import
     healthcheck:
-      test: ["CMD", "/opt/keycloak/bin/kc.sh", "show-config"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3 && grep -q 'UP' <&3"]
       interval: 15s
       timeout: 10s
       retries: 10
