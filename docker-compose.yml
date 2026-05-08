@@ -16,7 +16,7 @@ services:
       - keycloak_data:/opt/keycloak/data
       - ./keycloak/realm:/opt/keycloak/data/import
     healthcheck:
-      test: ["CMD", "/opt/keycloak/bin/kc.sh", "health"]
+      test: ["CMD", "/opt/keycloak/bin/kc.sh", "show-config"]
       interval: 15s
       timeout: 10s
       retries: 10
