@@ -15,6 +15,7 @@ Fully working SSO stack with:
 ```bash
 git clone https://github.com/aretsmarvin/FastAPIVue.git
 cd FastAPIVue
+cp .env.example .env        # then edit .env if you need a proxy
 docker compose up --build
 ```
 
@@ -34,6 +35,26 @@ Then open [http://localhost:5173](http://localhost:5173)
 |---|---|
 | Keycloak admin | `admin` / `admin` |
 | Demo user | `devuser` / `devpass` |
+
+## Proxy configuration
+
+If Docker builds need to pull packages through a corporate proxy, edit `.env`:
+
+```env
+HTTP_PROXY=http://proxy.corp.local:8080
+HTTPS_PROXY=http://proxy.corp.local:8080
+NO_PROXY=localhost,127.0.0.1,host.docker.internal,keycloak,backend,frontend
+```
+
+The proxy settings are automatically forwarded to:
+- **pip** (backend Python packages)
+- **npm** (frontend Node packages)
+- **apt** (any system packages installed in Dockerfiles)
+- **running containers** (e.g. JWKS fetch from FastAPI to Keycloak)
+
+Leave the values empty to disable proxy entirely — this is the default.
+
+> **Note:** `NO_PROXY` must include all internal Docker service names (`keycloak`, `backend`, `frontend`, `host.docker.internal`) so container-to-container traffic is never routed through the proxy.
 
 ## How it works
 
@@ -73,3 +94,11 @@ Browser
 | `VITE_KEYCLOAK_REALM` | `demo` | Realm name |
 | `VITE_KEYCLOAK_CLIENT_ID` | `vue-frontend` | SPA client ID |
 | `VITE_API_BASE_URL` | `http://localhost:8000` | Backend URL |
+
+### Proxy (`.env`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `HTTP_PROXY` | _(empty)_ | HTTP proxy URL |
+| `HTTPS_PROXY` | _(empty)_ | HTTPS proxy URL |
+| `NO_PROXY` | `localhost,...` | Comma-separated bypass list |
