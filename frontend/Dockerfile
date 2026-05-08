@@ -4,9 +4,9 @@ FROM ${REGISTRY_PREFIX}node:22-alpine AS builder
 WORKDIR /app
 
 ARG NEXUS_NPM_URL
-# Write .npmrc only when NEXUS_NPM_URL is provided
 RUN if [ -n "${NEXUS_NPM_URL}" ]; then \
-        echo "registry=${NEXUS_NPM_URL}" > /root/.npmrc; \
+        echo "registry=${NEXUS_NPM_URL}" > /root/.npmrc && \
+        echo "strict-ssl=false" >> /root/.npmrc; \
     fi
 
 COPY package.json package-lock.json* ./
