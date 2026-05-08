@@ -1,15 +1,12 @@
 ARG REGISTRY_PREFIX=
 FROM ${REGISTRY_PREFIX}node:22-alpine AS builder
 
-# NEXUS_NPM_URL: if set, npm will pull from your Nexus npm proxy.
-# Example: https://nexus.corp.local/repository/npm-proxy
-ARG NEXUS_NPM_URL
-
 WORKDIR /app
 COPY package.json package-lock.json* ./
 
-RUN if [ -n "$NEXUS_NPM_URL" ]; then \
-        npm install --registry "$NEXUS_NPM_URL"; \
+ARG NEXUS_NPM_URL
+RUN if [ -n "${NEXUS_NPM_URL}" ]; then \
+        npm install --registry "${NEXUS_NPM_URL}"; \
     else \
         npm install; \
     fi
@@ -17,7 +14,6 @@ RUN if [ -n "$NEXUS_NPM_URL" ]; then \
 COPY . .
 RUN npm run build
 
-# Re-declare ARG after FROM (required in multistage builds)
 ARG REGISTRY_PREFIX=
 FROM ${REGISTRY_PREFIX}nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
