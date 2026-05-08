@@ -1,6 +1,6 @@
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:25.0
+    image: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}quay.io/keycloak/keycloak:25.0
     command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: admin
@@ -8,10 +8,6 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME: localhost
-      # Proxy passthrough for outbound Keycloak calls (e.g. external IdP federation)
-      HTTP_PROXY: ${HTTP_PROXY:-}
-      HTTPS_PROXY: ${HTTPS_PROXY:-}
-      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1}
     ports:
       - "8080:8080"
     volumes:
@@ -28,19 +24,13 @@ services:
     build:
       context: ./backend
       args:
-        # Passed to pip and apt during docker build
-        HTTP_PROXY: ${HTTP_PROXY:-}
-        HTTPS_PROXY: ${HTTPS_PROXY:-}
-        NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1}
+        BASE_IMAGE: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}python:3.12-slim
+        NEXUS_PYPI_URL: ${NEXUS_PYPI_URL:-}
     environment:
       KEYCLOAK_URL: http://host.docker.internal:8080
       KEYCLOAK_REALM: demo
       KEYCLOAK_CLIENT_ID: fastapi
       KEYCLOAK_ISSUER: http://localhost:8080/realms/demo
-      # Proxy for outbound requests from the running container (e.g. JWKS fetch)
-      HTTP_PROXY: ${HTTP_PROXY:-}
-      HTTPS_PROXY: ${HTTPS_PROXY:-}
-      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,host.docker.internal}
     ports:
       - "8000:8000"
     depends_on:
@@ -51,10 +41,9 @@ services:
     build:
       context: ./frontend
       args:
-        # Passed to npm during docker build
-        HTTP_PROXY: ${HTTP_PROXY:-}
-        HTTPS_PROXY: ${HTTPS_PROXY:-}
-        NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1}
+        BASE_IMAGE: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}node:22-alpine
+        NGINX_IMAGE: ${HARBOR_REGISTRY:+${HARBOR_REGISTRY}/}nginx:alpine
+        NEXUS_NPM_URL: ${NEXUS_NPM_URL:-}
     ports:
       - "5173:80"
     depends_on:

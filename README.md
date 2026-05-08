@@ -15,7 +15,7 @@ Fully working SSO stack with:
 ```bash
 git clone https://github.com/aretsmarvin/FastAPIVue.git
 cd FastAPIVue
-cp .env.example .env        # then edit .env if you need a proxy
+cp .env.example .env        # edit .env for your registries
 docker compose up --build
 ```
 
@@ -36,25 +36,48 @@ Then open [http://localhost:5173](http://localhost:5173)
 | Keycloak admin | `admin` / `admin` |
 | Demo user | `devuser` / `devpass` |
 
-## Proxy configuration
+## Registry configuration (air-gapped / corporate)
 
-If Docker builds need to pull packages through a corporate proxy, edit `.env`:
+Edit `.env` to route all package and image pulls through your internal registries:
 
 ```env
-HTTP_PROXY=http://proxy.corp.local:8080
-HTTPS_PROXY=http://proxy.corp.local:8080
-NO_PROXY=localhost,127.0.0.1,host.docker.internal,keycloak,backend,frontend
+# Harbor: Docker image registry
+HARBOR_REGISTRY=harbor.corp.local
+
+# Nexus: PyPI proxy (pip)
+NEXUS_PYPI_URL=https://nexus.corp.local/repository/pypi-proxy/simple
+
+# Nexus: npm proxy
+NEXUS_NPM_URL=https://nexus.corp.local/repository/npm-proxy
 ```
 
-The proxy settings are automatically forwarded to:
-- **pip** (backend Python packages)
-- **npm** (frontend Node packages)
-- **apt** (any system packages installed in Dockerfiles)
-- **running containers** (e.g. JWKS fetch from FastAPI to Keycloak)
+### What each variable controls
 
-Leave the values empty to disable proxy entirely — this is the default.
+| Variable | Controls |
+|---|---|
+| `HARBOR_REGISTRY` | Base image prefix for all `FROM` lines in Dockerfiles (`python`, `node`, `nginx`, `keycloak`) |
+| `NEXUS_PYPI_URL` | `pip install --index-url` during backend build |
+| `NEXUS_NPM_URL` | `npm install --registry` during frontend build |
 
-> **Note:** `NO_PROXY` must include all internal Docker service names (`keycloak`, `backend`, `frontend`, `host.docker.internal`) so container-to-container traffic is never routed through the proxy.
+### Leave empty for local/public dev
+
+All three variables default to empty. When empty:
+- Docker pulls images from the public registry as normal.
+- pip pulls from PyPI.
+- npm pulls from the public npm registry.
+
+### Harbor image naming
+
+When `HARBOR_REGISTRY=harbor.corp.local`, Docker Compose will pull:
+
+```
+harbor.corp.local/python:3.12-slim
+harbor.corp.local/node:22-alpine
+harbor.corp.local/nginx:alpine
+harbor.corp.local/quay.io/keycloak/keycloak:25.0
+```
+
+Make sure these images are proxied or pushed to your Harbor instance before building.
 
 ## How it works
 
@@ -75,30 +98,11 @@ Browser
                     └─> JWKS validation via host.docker.internal:8080
 ```
 
-## Environment variables
+## Backend environment variables
 
-### Backend
-
-| Variable | Default | Description |
-|---|---|---|
-| `KEYCLOAK_URL` | required | Internal Keycloak URL for JWKS fetch |
-| `KEYCLOAK_REALM` | `demo` | Realm name |
-| `KEYCLOAK_CLIENT_ID` | `fastapi` | API client ID |
-| `KEYCLOAK_ISSUER` | required | Issuer matching token `iss` claim |
-
-### Frontend
-
-| Variable | Default | Description |
-|---|---|---|
-| `VITE_KEYCLOAK_URL` | `http://localhost:8080` | Public Keycloak URL |
-| `VITE_KEYCLOAK_REALM` | `demo` | Realm name |
-| `VITE_KEYCLOAK_CLIENT_ID` | `vue-frontend` | SPA client ID |
-| `VITE_API_BASE_URL` | `http://localhost:8000` | Backend URL |
-
-### Proxy (`.env`)
-
-| Variable | Default | Description |
-|---|---|---|
-| `HTTP_PROXY` | _(empty)_ | HTTP proxy URL |
-| `HTTPS_PROXY` | _(empty)_ | HTTPS proxy URL |
-| `NO_PROXY` | `localhost,...` | Comma-separated bypass list |
+| Variable | Description |
+|---|---|
+| `KEYCLOAK_URL` | Internal Keycloak URL for JWKS fetch |
+| `KEYCLOAK_REALM` | Realm name |
+| `KEYCLOAK_CLIENT_ID` | API client ID |
+| `KEYCLOAK_ISSUER` | Issuer matching token `iss` claim |
